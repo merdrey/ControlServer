@@ -2,7 +2,8 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Layouts 2.15
 import QtQuick.Controls.Basic 2.15
-import QtQuick.Dialogs
+
+import enums 1.0
 
 Window {
     minimumWidth: 640
@@ -120,6 +121,10 @@ Window {
                         id: sendColorBtn
 
                         text: qsTr("Отправить цвет")
+
+                        onClicked: {
+                            server.sendCommand(colorDemoRect.color, Commands.ComFillScreen)
+                        }
                     }
                 }
             }
@@ -173,6 +178,10 @@ Window {
 
                     enabled: textInput.length > 0
                     text: qsTr("Отправить текст")
+
+                    onClicked: {
+                        server.sendCommand(textInput.text, Commands.ComSendText)
+                    }
                 }
             }
         }

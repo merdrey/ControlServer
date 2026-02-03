@@ -1,5 +1,10 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include <QtQml>
+
+#include "server.h"
+#include "enums.h"
 
 int main(int argc, char *argv[])
 {
@@ -8,8 +13,15 @@ int main(int argc, char *argv[])
 #endif
     QGuiApplication app(argc, argv);
 
+    qmlRegisterType<Enums>("enums", 1, 0, "Commands");
+
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
+
+    Server controlServer;
+    controlServer.initSocket(QHostAddress("192.168.0.22"), 9000);
+
+    engine.rootContext()->setContextProperty("server", &controlServer);
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreated,
