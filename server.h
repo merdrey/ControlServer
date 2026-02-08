@@ -6,6 +6,9 @@
 
 #include "enums.h"
 
+#define UDP_PORT 9000
+#define IP_ADDR QHostAddress("10.0.0.10")
+
 class Server : public QObject
 {
     Q_OBJECT
@@ -26,9 +29,6 @@ private:
 
 private:
     QUdpSocket* m_pudp;
-
-    QHostAddress m_addr;
-    quint16 m_port;
 };
 
 #endif // SERVER_H

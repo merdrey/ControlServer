@@ -158,7 +158,7 @@ Window {
                     TextArea {
                         id: textInput
 
-                        property int maxLength: 150
+                        property int maxLength: 50
                         placeholderText: qsTr("Input Text to Display on Screen (max" + maxLength + " symbols)")
                         wrapMode: TextEdit.Wrap
                         background: Rectangle {
