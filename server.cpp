@@ -66,23 +66,16 @@ void Server::onReadyRead()
 
         m_pudp->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
-        qDebug() << datagram << datagram.size();
-
         if (datagram[0] == Enums::Commands::ComAnswer) { // пришел ответ
             datagram.removeFirst();
 
-            qDebug() << datagram << datagram.size();
             quint8 ack = quint8(datagram[0]);
-            qDebug() << ack;
             if (ack == 0x01) { // данные приняты
                 datagram.removeFirst();
 
-
-                qDebug() << datagram << datagram.size();
                 char dataSize = datagram[0];
                 datagram.removeFirst();
 
-                qDebug() << datagram << datagram.size();
                 if (dataSize >= datagram.size()) { // размер данных удовлетворяет требованиям
                     emit sendMessage(datagram.data(), Enums::Messages::Recieve);
                 } else {
