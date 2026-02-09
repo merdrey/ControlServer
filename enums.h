@@ -9,10 +9,20 @@ class Enums : public QObject
 public:
     enum Commands {
         ComFillScreen = 1,
-        ComSendText
+        ComSendText,
+        ComAnswer = 16
     };
 
     Q_ENUM(Commands)
+
+    enum Messages {
+        Info = 1,
+        Error,
+        Send,
+        Recieve
+    };
+
+    Q_ENUM(Messages)
 };
 
 #endif // ENUMS_H

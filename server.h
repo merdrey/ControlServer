@@ -23,6 +23,7 @@ private slots:
     void onReadyRead();
 
 signals:
+    void sendMessage(const QString &message, const Enums::Messages msg);
 
 private:
     quint16 rgbToRgb565(const char r, const char g, const char b);

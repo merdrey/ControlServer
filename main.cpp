@@ -13,13 +13,13 @@ int main(int argc, char *argv[])
 #endif
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<Enums>("enums", 1, 0, "Commands");
+    qmlRegisterUncreatableType<Enums>("App.Enums", 1, 0, "Enums", "Enums only");
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
 
     Server controlServer;
-    controlServer.initSocket(QHostAddress("10.0.0.1"), 9000);
+    controlServer.initSocket(QHostAddress::AnyIPv4, 9000);
 
     engine.rootContext()->setContextProperty("server", &controlServer);
     QObject::connect(

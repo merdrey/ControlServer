@@ -18,8 +18,6 @@ void Server::initSocket(const QHostAddress &addr, quint16 port)
 
 void Server::sendCommand(const QVariant &data, const Enums::Commands command)
 {
-    qDebug() << command;
-
     QByteArray packet;
 
     switch (command) {
@@ -36,9 +34,9 @@ void Server::sendCommand(const QVariant &data, const Enums::Commands command)
         packet.append(sizeof(colorData));
         packet.append(colorData, 2);
 
-        qDebug() << packet;
-
         m_pudp->writeDatagram(packet, IP_ADDR, UDP_PORT);
+
+        emit sendMessage("Сервер отправил команду заливки на " + IP_ADDR.toString(), Enums::Messages::Send);
         break;
     }
     case Enums::Commands::ComSendText:
@@ -50,8 +48,7 @@ void Server::sendCommand(const QVariant &data, const Enums::Commands command)
         packet.append(text.data());
 
         m_pudp->writeDatagram(packet, IP_ADDR, UDP_PORT);
-
-        qDebug() << packet;
+        emit sendMessage("Сервер отправил данные на " + IP_ADDR.toString(), Enums::Messages::Send);
         break;
     }
     default:
@@ -68,7 +65,35 @@ void Server::onReadyRead()
         quint16 senderPort;
 
         m_pudp->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
-        qDebug() << "Данные " << datagram << " от " << sender.toString() << ":" << senderPort;
+
+        qDebug() << datagram << datagram.size();
+
+        if (datagram[0] == Enums::Commands::ComAnswer) { // пришел ответ
+            datagram.removeFirst();
+
+            qDebug() << datagram << datagram.size();
+            quint8 ack = quint8(datagram[0]);
+            qDebug() << ack;
+            if (ack == 0x01) { // данные приняты
+                datagram.removeFirst();
+
+
+                qDebug() << datagram << datagram.size();
+                char dataSize = datagram[0];
+                datagram.removeFirst();
+
+                qDebug() << datagram << datagram.size();
+                if (dataSize >= datagram.size()) { // размер данных удовлетворяет требованиям
+                    emit sendMessage(datagram.data(), Enums::Messages::Recieve);
+                } else {
+                    emit sendMessage("Данные от " + sender.toString() + " неверны", Enums::Messages::Error);
+                }
+            } else {
+                emit sendMessage("Данные не были приняты " + sender.toString(), Enums::Messages::Error);
+            }
+        } else {
+            emit sendMessage("Ответ не пришел от " + sender.toString(), Enums::Messages::Error);
+        }
     }
 }
 

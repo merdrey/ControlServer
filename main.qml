@@ -3,13 +3,21 @@ import QtQuick.Window 2.15
 import QtQuick.Layouts 2.15
 import QtQuick.Controls.Basic 2.15
 
-import enums 1.0
+import App.Enums 1.0
 
 Window {
     minimumWidth: 640
     minimumHeight: 480
     visible: true
     title: qsTr("Server")
+
+    NotificationManager {
+        id: notifManager
+
+        anchors.fill: parent
+        anchors.margins: 10
+        z: 1
+    }
 
     ColumnLayout {
         id: mainLayout
@@ -123,7 +131,7 @@ Window {
                         text: qsTr("Отправить цвет")
 
                         onClicked: {
-                            server.sendCommand(colorDemoRect.color, Commands.ComFillScreen)
+                            server.sendCommand(colorDemoRect.color, Enums.ComFillScreen)
                         }
                     }
                 }
@@ -180,10 +188,18 @@ Window {
                     text: qsTr("Отправить текст")
 
                     onClicked: {
-                        server.sendCommand(textInput.text, Commands.ComSendText)
+                        server.sendCommand(textInput.text, Enums.ComSendText)
                     }
                 }
             }
+        }
+    }
+
+    Connections {
+        target: server
+
+        function onSendMessage(message, type) {
+            notifManager.addNotification(type, message)
         }
     }
 }
