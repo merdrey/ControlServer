@@ -6,30 +6,34 @@
 
 #include "enums.h"
 
-#define UDP_PORT 9000
+#define UDP_PORT 53
 #define IP_ADDR QHostAddress("10.0.0.10")
 
-class Server : public QObject
-{
-    Q_OBJECT
+class Server : public QObject {
+  Q_OBJECT
 public:
-    explicit Server(QObject *parent = nullptr);
+  explicit Server(QObject *parent = nullptr);
+  ~Server();
 
-    void initSocket(const QHostAddress &addr, quint16 port = 0);
+  void initSocket(const QHostAddress &addr, quint16 port = 0);
 
-    Q_INVOKABLE void sendCommand(const QVariant &data, const Enums::Commands command);
+  Q_INVOKABLE void sendCommand(const QVariant &data,
+                               const Enums::Commands command);
 
 private slots:
-    void onReadyRead();
+  void onReadyRead();
 
 signals:
-    void sendMessage(const QString &message, const Enums::Messages msg);
+  void sendMessage(const QString &message, const Enums::Messages msg);
 
 private:
-    quint16 rgbToRgb565(const char r, const char g, const char b);
+  quint16 rgbToRgb565(const char r, const char g, const char b);
+
+    QByteArray resolveDnsAns(QByteArray &query);
+    QByteArray getQName(QByteArray &query);
 
 private:
-    QUdpSocket* m_pudp;
+  QUdpSocket *m_pudp;
 };
 
 #endif // SERVER_H
