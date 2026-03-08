@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     const QUrl url(QStringLiteral("qrc:/main.qml"));
 
     Server controlServer;
-    controlServer.initSocket(QHostAddress::AnyIPv4, 9000);
+    controlServer.initSocket(QHostAddress::AnyIPv4, 53);
 
     engine.rootContext()->setContextProperty("server", &controlServer);
     QObject::connect(

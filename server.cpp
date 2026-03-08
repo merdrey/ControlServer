@@ -2,6 +2,9 @@
 #include <QDebug>
 #include <QVariant>
 #include <QColor>
+#include <QtEndian>
+
+#include "structs.h"
 
 Server::Server(QObject *parent)
     : QObject{parent}
@@ -66,31 +69,105 @@ void Server::onReadyRead()
 
         m_pudp->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
-        if (datagram[0] == Enums::Commands::ComAnswer) { // пришел ответ
-            datagram.removeFirst();
+        qDebug() << datagram << sender << senderPort;
 
-            quint8 ack = quint8(datagram[0]);
-            if (ack == 0x01) { // данные приняты
-                datagram.removeFirst();
+        // if (!datagram.isEmpty()) {
+        //     QByteArray answer = resolveDnsAns(datagram);
 
-                char dataSize = datagram[0];
-                datagram.removeFirst();
+        //     qDebug() << answer;
 
-                if (dataSize >= datagram.size()) { // размер данных удовлетворяет требованиям
-                    emit sendMessage(datagram.data(), Enums::Messages::Recieve);
-                } else {
-                    emit sendMessage("Данные от " + sender.toString() + " неверны", Enums::Messages::Error);
-                }
-            } else {
-                emit sendMessage("Данные не были приняты " + sender.toString(), Enums::Messages::Error);
-            }
-        } else {
-            emit sendMessage("Ответ не пришел от " + sender.toString(), Enums::Messages::Error);
-        }
+        //     if (!answer.isEmpty()) {
+        //         m_pudp->writeDatagram(answer, IP_ADDR, UDP_PORT);
+        //     }
+        // }
     }
 }
 
 quint16 Server::rgbToRgb565(const char r, const char g, const char b)
 {
     return ((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (b >> 3);
+}
+
+QByteArray Server::resolveDnsAns(QByteArray &query)
+{
+    QByteArray response;
+    DnsHeader header;
+    DnsQuestion question;
+    DnsAnswer answer;
+
+    // parsing DNS header
+
+    header.id = static_cast<quint8>(query[0]) << 8 | static_cast<quint8>(query[1]);
+    query.remove(0, 2);
+    header.flags = static_cast<quint8>(query[0]) << 8 | static_cast<quint8>(query[1]);
+    query.remove(0, 2);
+    header.QDCount = static_cast<quint8>(query[0]) << 8 | static_cast<quint8>(query[1]);
+    query.remove(0, 2);
+    header.ANCount = static_cast<quint8>(query[0]) << 8 | static_cast<quint8>(query[1]);
+    query.remove(0, 2);
+    header.NSCount = static_cast<quint8>(query[0]) << 8 | static_cast<quint8>(query[1]);
+    query.remove(0, 2);
+    header.ARCount = static_cast<quint8>(query[0]) << 8 | static_cast<quint8>(query[1]);
+    query.remove(0, 2);
+
+    // parsing DNS question
+
+    question.QName = getQName(query);
+
+    question.QType = static_cast<quint8>(query[0]) << 8 | static_cast<quint8>(query[1]);
+    query.remove(0, 2);
+    question.QClass = static_cast<quint8>(query[0]) << 8 | static_cast<quint8>(query[1]);
+    query.remove(0, 2);
+
+    // making DNS response
+
+    header.ANCount += 1;
+    header.flags |= 0x8000;
+
+    answer.QName = QByteArray::fromHex("c00c");
+    answer.QType = question.QType;
+    answer.QClass = question.QClass;
+    answer.ttl = 0x0000545f;
+
+    switch (question.QType) {
+    case 0x0001: { // A record type
+        quint32 addr = QHostAddress("10.0.0.1").toIPv4Address();
+        quint32 addrBe = qToBigEndian(addr);
+        answer.txt = QByteArray(reinterpret_cast<const char*>(&addrBe), 4);
+        answer.dataLength = answer.txt.size();
+        break;
+    }
+    case 0x0010: { // TXT record type
+        QByteArray text = QByteArray("HELLO!");
+        answer.txt = QByteArray(reinterpret_cast<const char*>(text.size()), 1).append(text);
+        answer.dataLength = answer.txt.size();
+        break;
+    }
+    default: {
+        qDebug() << "Неизвестный тип записи: " << question.QType;
+        return QByteArray();
+    }
+    }
+
+    response.append(dnsHeaderToByteArray(header));
+    response.append(dnsQuestionToByteArray(question));
+    qDebug() << answer;
+    qDebug() << dnsAnswerToByteArray(answer);
+    response.append(dnsAnswerToByteArray(answer));
+
+    return response;
+}
+
+QByteArray Server::getQName(QByteArray &query)
+{
+    QByteArray name;
+    quint8 length;
+    while(query[0] != 0x00) {
+        length = static_cast<quint8>(query[0]);
+        name.append(query.sliced(0, length + 1));
+        query.remove(0, length + 1);
+    }
+    name.append(query[0]);
+    query.removeFirst();
+    return name;
 }

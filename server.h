@@ -6,7 +6,7 @@
 
 #include "enums.h"
 
-#define UDP_PORT 9000
+#define UDP_PORT 53
 #define IP_ADDR QHostAddress("10.0.0.10")
 
 class Server : public QObject
@@ -27,6 +27,9 @@ signals:
 
 private:
     quint16 rgbToRgb565(const char r, const char g, const char b);
+
+    QByteArray resolveDnsAns(QByteArray &query);
+    QByteArray getQName(QByteArray &query);
 
 private:
     QUdpSocket* m_pudp;
