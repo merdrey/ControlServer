@@ -1,13 +1,15 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <QHash>
 #include <QObject>
 #include <QUdpSocket>
 
-#include "enums.h"
+#include "clientsession.h"
+#include "fragmentcollector.h"
 
-#define UDP_PORT 53
-#define IP_ADDR QHostAddress("10.0.0.10")
+#define SERV_PORT 51820
+#define SERV_ADDR QHostAddress("192.168.0.6")
 
 class Server : public QObject {
   Q_OBJECT
@@ -16,24 +18,22 @@ public:
   ~Server();
 
   void initSocket(const QHostAddress &addr, quint16 port = 0);
-
-  Q_INVOKABLE void sendCommand(const QVariant &data,
-                               const Enums::Commands command);
+  void setFragCollector(FragmentCollector *collector);
 
 private slots:
   void onReadyRead();
-
-signals:
-  void sendMessage(const QString &message, const Enums::Messages msg);
+  void onSessionTimeout(const quint32 clientIp);
 
 private:
-  quint16 rgbToRgb565(const char r, const char g, const char b);
-
-    QByteArray resolveDnsAns(QByteArray &query);
-    QByteArray getQName(QByteArray &query);
+  DnsHeader parseDnsHeader(QByteArray &input);
+  DnsQuestion parseDnsQuestion(QByteArray &input);
+  QByteArray getQName(QByteArray &input);
 
 private:
-  QUdpSocket *m_pudp;
+  QUdpSocket *m_listenSocket{nullptr};
+  FragmentCollector *m_fragCollector{nullptr};
+
+  QHash<quint32, ClientSession *> m_sessions;
 };
 
 #endif // SERVER_H

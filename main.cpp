@@ -3,35 +3,39 @@
 #include <QQmlContext>
 #include <QtQml>
 
-#include "server.h"
 #include "enums.h"
+#include "server.h"
+#include "udpclient.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+  QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
-    QGuiApplication app(argc, argv);
+  QGuiApplication app(argc, argv);
 
-    qmlRegisterUncreatableType<Enums>("App.Enums", 1, 0, "Enums", "Enums only");
+  qmlRegisterUncreatableType<Enums>("App.Enums", 1, 0, "Enums", "Enums only");
 
-    QQmlApplicationEngine engine;
-    const QUrl url(QStringLiteral("qrc:/main.qml"));
+  QQmlApplicationEngine engine;
+  const QUrl url(QStringLiteral("qrc:/main.qml"));
 
-    Server controlServer;
-    controlServer.initSocket(QHostAddress::AnyIPv4, 53);
+  Server controlServer;
+  controlServer.initSocket(QHostAddress::AnyIPv4, 53);
 
-    engine.rootContext()->setContextProperty("server", &controlServer);
-    QObject::connect(
-        &engine,
-        &QQmlApplicationEngine::objectCreated,
-        &app,
-        [url](QObject *obj, const QUrl &objUrl) {
-            if (!obj && url == objUrl)
-                QCoreApplication::exit(-1);
-        },
-        Qt::QueuedConnection);
-    engine.load(url);
+  UdpClient udpClient;
+  udpClient.initSocket(QHostAddress::AnyIPv4, UDP_PORT);
 
-    return app.exec();
+  FragmentCollector *fragCollector = new FragmentCollector();
+  controlServer.setFragCollector(fragCollector);
+
+  engine.rootContext()->setContextProperty("udpClient", &udpClient);
+  QObject::connect(
+      &engine, &QQmlApplicationEngine::objectCreated, &app,
+      [url](QObject *obj, const QUrl &objUrl) {
+        if (!obj && url == objUrl)
+          QCoreApplication::exit(-1);
+      },
+      Qt::QueuedConnection);
+  engine.load(url);
+
+  return app.exec();
 }
