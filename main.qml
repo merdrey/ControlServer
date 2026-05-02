@@ -25,7 +25,133 @@ Window {
         anchors.fill: parent
 
         Rectangle {
-            Layout.fillHeight: true
+            Layout.minimumHeight: 50
+            Layout.fillWidth: true
+            Layout.topMargin: 10
+            Layout.leftMargin: 15
+            Layout.rightMargin: 15
+
+            color: "seagreen"
+            opacity: 0.6
+
+            RowLayout {
+                id: ipRow
+
+                anchors.centerIn: parent
+
+                spacing: 5
+
+                Label {
+                    text: qsTr("Client IP: ")
+                    color: "white"
+                    font.bold: true
+                    verticalAlignment: Text.AlignVCenter
+                }
+                TextField {
+                    id: firstOctet
+
+                    validator: IntValidator {
+                        bottom: 0
+                        top: 255
+                    }
+                    verticalAlignment: Text.AlignVCenter
+
+                    background: Rectangle {
+                        implicitWidth: 35
+                        color: "navajowhite"
+                        border.color: "linen"
+                        border.width: 2
+                        radius: 4
+                    }
+                }
+                Label {
+                    text: qsTr(".")
+                    font.bold: true
+                    font.pixelSize: 14
+                    verticalAlignment: Text.AlignVCenter
+                }
+                TextField {
+                    id: secondOctet
+
+                    validator: IntValidator {
+                        bottom: 0
+                        top: 255
+                    }
+                    verticalAlignment: Text.AlignVCenter
+
+                    background: Rectangle {
+                        implicitWidth: 35
+                        color: "navajowhite"
+                        border.color: "linen"
+                        border.width: 2
+                        radius: 4
+                    }
+                }
+                Label {
+                    text: qsTr(".")
+                    font.bold: true
+                    font.pixelSize: 14
+                    verticalAlignment: Text.AlignVCenter
+                }
+                TextField {
+                    id: thirdOctet
+
+                    validator: IntValidator {
+                        bottom: 0
+                        top: 255
+                    }
+                    verticalAlignment: Text.AlignVCenter
+
+                    background: Rectangle {
+                        implicitWidth: 35
+                        color: "navajowhite"
+                        border.color: "linen"
+                        border.width: 2
+                        radius: 4
+                    }
+                }
+                Label {
+                    text: qsTr(".")
+                    font.bold: true
+                    font.pixelSize: 14
+                    verticalAlignment: Text.AlignVCenter
+                }
+                TextField {
+                    id: fourthOctet
+
+                    validator: IntValidator {
+                        bottom: 0
+                        top: 255
+                    }
+                    verticalAlignment: Text.AlignVCenter
+
+                    background: Rectangle {
+                        implicitWidth: 35
+                        color: "navajowhite"
+                        border.color: "linen"
+                        border.width: 2
+                        radius: 4
+                    }
+                }
+                Button {
+                    id: ipButton
+
+                    enabled: firstOctet.acceptableInput
+                             && secondOctet.acceptableInput
+                             && thirdOctet.acceptableInput
+                             && fourthOctet.acceptableInput
+
+                    text: qsTr("Enter")
+
+                    onClicked: {
+                        udpClient.updateClientAddr(firstOctet.text + "." + secondOctet.text + "." + thirdOctet.text + "." + fourthOctet)
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.preferredHeight: controlsColumn.height * 1.2
             Layout.fillWidth: true
             Layout.topMargin: 10
             Layout.leftMargin: 15
@@ -58,7 +184,6 @@ Window {
                 Column {
                     id: controlsColumn
 
-                    Layout.fillHeight: true
                     spacing: 5
                     Row {
                         spacing: 5
@@ -129,9 +254,10 @@ Window {
                         id: sendColorBtn
 
                         text: qsTr("Отправить цвет")
+                        height: 50
 
                         onClicked: {
-                            server.sendCommand(colorDemoRect.color, Enums.ComFillScreen)
+                            udpClient.sendCommand(colorDemoRect.color, Enums.ComFillScreen)
                         }
                     }
                 }
@@ -186,9 +312,10 @@ Window {
 
                     enabled: textInput.length > 0
                     text: qsTr("Отправить текст")
+                    height: 50
 
                     onClicked: {
-                        server.sendCommand(textInput.text, Enums.ComSendText)
+                        udpClient.sendCommand(textInput.text, Enums.ComSendText)
                     }
                 }
             }
@@ -196,7 +323,7 @@ Window {
     }
 
     Connections {
-        target: server
+        target: udpClient
 
         function onSendMessage(message, type) {
             notifManager.addNotification(type, message)
