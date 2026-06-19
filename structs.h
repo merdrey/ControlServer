@@ -74,4 +74,16 @@ struct FragmentBuffer {
   QDateTime lastUpdate;
 };
 
+struct FragmentHeader {
+  quint16 id;
+  quint16 offset;
+  quint16 totalLen;
+};
+
+struct ImageHeader {
+  quint16 width;
+  quint16 height;
+  quint32 size;
+};
+
 #endif // STRUCTS_H

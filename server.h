@@ -9,7 +9,7 @@
 #include "fragmentcollector.h"
 
 #define SERV_PORT 51820
-#define SERV_ADDR QHostAddress("192.168.0.6")
+#define SERV_ADDR QHostAddress::LocalHost
 
 class Server : public QObject {
   Q_OBJECT

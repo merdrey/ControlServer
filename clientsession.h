@@ -26,7 +26,7 @@ public:
   quint32 getClientIp() const;
 
 private slots:
-  void onReadyRead(); // sends data to clients
+  void onReadyRead(); // sends data to client
   void onTimeout();
 
 signals:

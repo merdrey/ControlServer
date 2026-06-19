@@ -67,7 +67,8 @@ void Server::onReadyRead() {
 }
 
 void Server::onSessionTimeout(const quint32 clientIp) {
-  m_sessions.remove(clientIp);
+  ClientSession *expSession = m_sessions.take(clientIp);
+  delete expSession;
 }
 
 DnsHeader Server::parseDnsHeader(QByteArray &input) {

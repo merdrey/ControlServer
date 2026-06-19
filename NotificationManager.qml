@@ -3,7 +3,7 @@ import QtQuick 2.15
 Item {
     id: manager
 
-    property int maxNotif: 4
+    property int maxNotif: 8
     property int notifCount: 0
 
     function addNotification(mType, mText) {
@@ -20,6 +20,7 @@ Item {
                 notification.finished.connect(function() {
                     notification.destroy()
                     notifCount--
+                    Qt.callLater(arrangeNotifications)
                 })
             }
         }
@@ -46,11 +47,6 @@ Item {
     Item {
         id: notificationArea
 
-        width: 200
-        height: 250
-        anchors {
-            top: parent.top
-            right: parent.right
-        }
+        anchors.fill: parent
     }
 }
