@@ -3,5 +3,9 @@
         <file>main.qml</file>
         <file>Notification.qml</file>
         <file>NotificationManager.qml</file>
+        <file>MainPanel.qml</file>
+        <file>NotificationPanel.qml</file>
+        <file>AddressPanel.qml</file>
+        <file>SplitButton.qml</file>
     </qresource>
 </RCC>

@@ -17,7 +17,7 @@ ClientSession::ClientSession(const QHostAddress &clientAddr, quint16 clientPort,
   m_udpSocket = new QUdpSocket(this);
   m_idleTimer = new QTimer(this);
 
-  m_udpSocket->bind(QHostAddress::AnyIPv4, m_serverPort);
+  m_udpSocket->bind(QHostAddress::AnyIPv4, 51821);
   connect(m_udpSocket, &QUdpSocket::readyRead, this,
           &ClientSession::onReadyRead);
 

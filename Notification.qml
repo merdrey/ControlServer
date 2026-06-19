@@ -1,46 +1,47 @@
 import QtQuick 2.15
-import QtQuick.Controls.Basic
+import QtQuick.Controls.Basic 2.15
+import QtQuick.Layouts 2.15
 
 import App.Enums 1.0
 
-Item {
-    id: root
-
-    width: parent.width
-    height: 70
+Rectangle {
+    id: notifBack
 
     required property string message
     required property int type
 
-    property int duration: 5 * 1000
-
     signal finished()
 
-    Rectangle {
-        id: itemBack
+    width: parent.width
+    height: notifCol.height
+    opacity: 0.75
+    color: "white"
+    radius: 4
+    border {
+        width: 4
+        color: "gray"
+    }
 
-        anchors.fill: parent
-        opacity: 0.75
-        color: "white"
-        radius: 4
-        border {
-            width: 4
-            color: "gray"
-        }
+    Column {
+        id: notifCol
 
-        Column {
-            anchors.fill: parent
-            anchors.topMargin: 5
-            spacing: 5
+        anchors.left: parent.left
+        anchors.leftMargin: 10
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        spacing: 5
+
+        RowLayout {
+            id: notifHeaderLayout
+
+            width: parent.width
+
             Text {
                 id: notifType
 
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: 10
-                }
+                Layout.alignment: Qt.AlignVCenter
 
+                topPadding: 5
                 text: getMessageType()
                 color: "black"
                 font.pixelSize: 12
@@ -51,36 +52,61 @@ Item {
             }
 
             Text {
-                id: notifText
+                id: notifTime
 
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: 5
-                }
-                text: root.message
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                topPadding: 5
+                text: Qt.formatDateTime(new Date(), "hh:mm:ss d.MM.yyyy")
                 color: "black"
-                font.pixelSize: 10
+                font.pixelSize: 12
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
-                wrapMode: Text.WordWrap
+            }
+
+            Text {
+                id: cross
+
+                Layout.alignment: Qt.AlignVCenter
+
+                topPadding: 5
+                text: "X"
+                color: "black"
+                font.pixelSize: 12
+                font.bold: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+
+                    onEntered: cross.color = "red"
+                    onExited: cross.color = "black"
+                    onPressed: cross.color = Qt.lighter("red", 1.2)
+                    onReleased: cross.color = "red"
+                    onClicked: finished()
+                }
             }
         }
 
-        SequentialAnimation {
-                running: true
+        Text {
+            id: notifText
 
-                PauseAnimation { duration: root.duration }
-
-                ScriptAction {
-                    script: root.finished()
-                }
-            }
+            width: parent.width
+            height: implicitHeight
+            bottomPadding: 5
+            text: notifBack.message
+            color: "black"
+            font.pixelSize: 10
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            wrapMode: Text.WordWrap
+        }
     }
 
     function getMessageType() {
-        switch(root.type) {
+        switch(notifBack.type) {
         case Enums.Info: {
             notifType.color = "dimgray"
             return "Инфо"
@@ -101,9 +127,5 @@ Item {
             break
         }
         }
-    }
-
-    onFinished: {
-        destroy()
     }
 }

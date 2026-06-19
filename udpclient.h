@@ -27,7 +27,8 @@ signals:
   void sendMessage(const QString &message, const Enums::Messages msg);
 
 private:
-  quint16 rgbToRgb565(const char r, const char g, const char b);
+  static quint16 rgbToRgb565(const char r, const char g, const char b);
+  static QByteArray convertImgToRGB565(const QImage &img);
 
 private:
   QUdpSocket *m_udpSocket{nullptr};
